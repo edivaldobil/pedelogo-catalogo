@@ -1,25 +1,41 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongodb-deployment
+  name: api-deployment
 spec:
   selector:
     matchLabels:
-      app: mongodb
+      app: api
   template:
     metadata:
       labels:
-        app: mongodb
+        app: api
     spec:
       containers:
-      - name: mongodb
-        image: mongo:4.2.8
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        ports:
-        - containerPort: 27017
-        envFrom:
-          - secretRef:
-              name:  mongodb-secret
+        - name: api
+          image: edivaldomva/pedelogo-catalogo:v1.0.0
+          resources:
+            limits:
+              memory: 128Mi
+              cpu: 500m
+          ports:
+            - containerPort: 80
+              name: http
+            - containerPort: 443
+              name: https
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: api-configmap
+          env:
+            - name: Mongo_User
+              valueFrom:
+                  secretKeyRef:
+                    key: MONGO_INITDB_ROOT_USERNAME
+                    name: mongodb-secret
+            - name: Mongo_password
+              valueFrom:
+                  secretKeyRef:
+                    key: MONGO_INITDB_ROOT_PASSWORD
+                    name:  mongodb-secret
+
